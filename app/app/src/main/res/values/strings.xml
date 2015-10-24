@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">Tracker Mirror</string>
     <string name="action_settings">Settings</string>
+    
+    <string name="saved_name">TrackerMirror_Data_Name</string>
+    <string name="saved_email">TrackerMirror_Data_Email</string>
+    <string name="saved_surname">TrackerMirror_Data_Surname</string>
+    <string name="saved_height">TrackerMirror_Data_Height</string>
+    <string name="saved_shoesize">TrackerMirror_Data_ShoeSize</string>
 </resources>
