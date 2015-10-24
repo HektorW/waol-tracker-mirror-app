@@ -1,41 +1,40 @@
 package com.waol.trackermirror.utils;
 
+import android.os.AsyncTask;
+import android.util.Log;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 
 
-public class TcpClient extends Thread {
+public class TcpClient extends AsyncTask<String, String, Void> {
 
-    private String remoteIpAddress;
-    private int port;
     private OnMessageReceived messageListener = null;
 
     private Socket socket;
     private PrintWriter bufferOut;
-    private BufferedReader bufferedReader;
+    private BufferedReader bufferIn;
     private String incoming;
 
     private boolean isRunning = false;
 
-    public TcpClient(String remoteIpAddress, int port, OnMessageReceived messageListener) {
-        this.remoteIpAddress = remoteIpAddress;
-        this.port = port;
+    public TcpClient(OnMessageReceived messageListener) {
         this.messageListener = messageListener;
     }
 
-    public void sendData(String data) throws IOException {
+    public void sendData(String data) {
         if(bufferOut != null && isRunning){
+            Log.d("TCPClient", "Send data");
             bufferOut.println(data);
             bufferOut.flush();
         }
     }
 
-    public void closeSocket() throws IOException {
+    public void closeSocket() {
         isRunning = false;
 
         if(bufferOut != null){
@@ -43,32 +42,48 @@ public class TcpClient extends Thread {
             bufferOut.close();
         }
 
+        bufferIn = null;
         bufferOut = null;
-        this.socket.close();
     }
 
-    public void run() {
+    @Override
+    protected Void doInBackground(String... params) {
         this.isRunning = true;
+        Log.d("TCPClient", "DoInBackground");
 
         try{
-            this.socket = new Socket(remoteIpAddress, port);
-            this.bufferOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
-            this.bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.socket = new Socket(params[0], Integer.parseInt(params[1]));
+            Log.d("TCPClient", "Connect to socket " + params[0]);
 
-            while (isRunning){
-                try{
-                    incoming = bufferedReader.readLine();
-                    if(incoming != null && messageListener != null){
-                        messageListener.messageReceived(incoming);
+            try{
+
+                this.bufferOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
+                this.bufferIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+                while (isRunning){
+                    try{
+                        incoming = bufferIn.readLine();
+                        if(incoming != null && messageListener != null){
+                            Log.d("TCPClient", "Message received");
+                            messageListener.messageReceived(incoming);
+                        }
+                    } catch (Exception e){
+                        e.printStackTrace();
                     }
-                } catch (Exception e){
-                    e.printStackTrace();
                 }
-            }
 
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            finally {
+                Log.d("TCPClient", "Close socket");
+                this.socket.close();
+            }
         } catch (Exception e){
             e.printStackTrace();
         }
+
+        return null;
     }
 
     public interface OnMessageReceived {
