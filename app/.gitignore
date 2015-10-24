@@ -5,6 +5,3 @@
 .DS_Store
 /build
 /captures
-.idea/vcs.xml
-*.apk
-*.jks
