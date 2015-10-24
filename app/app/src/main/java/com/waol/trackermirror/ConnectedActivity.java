@@ -1,10 +1,13 @@
 package com.waol.trackermirror;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.estimote.sdk.Beacon;
@@ -12,6 +15,7 @@ import com.estimote.sdk.BeaconManager;
 import com.estimote.sdk.Region;
 import com.estimote.sdk.Utils;
 import com.waol.trackermirror.utils.EstimotesHelper;
+import com.waol.trackermirror.utils.Settings;
 import com.waol.trackermirror.utils.TcpClient;
 
 import org.json.JSONException;
@@ -30,6 +34,7 @@ public class ConnectedActivity extends AppCompatActivity {
 
     private TextView beaconId;
     private TextView beaconDistance;
+    private Button userInformationButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +43,7 @@ public class ConnectedActivity extends AppCompatActivity {
 
         this.beaconId = (TextView)findViewById(R.id.connected_beacon_id_txt);
         this.beaconDistance = (TextView)findViewById(R.id.connected_beacon_distance_txt);
+        this.userInformationButton = (Button)findViewById(R.id.connected_userinformation_btn);
 
         // Create connection with tcp server
         this.tcpClient = new TcpClient(new TcpClient.OnMessageReceived() {
@@ -66,9 +72,16 @@ public class ConnectedActivity extends AppCompatActivity {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    
+
                     tcpClient.sendData(json.toString());
                 }
+            }
+        });
+
+        this.userInformationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(ConnectedActivity.this, InformationActivity.class));
             }
         });
     }
@@ -98,17 +111,12 @@ public class ConnectedActivity extends AppCompatActivity {
 
     private JSONObject createInfoJsonObject() throws JSONException {
         JSONObject infoJson = new JSONObject();
-        infoJson.put("name", getStoredData(getString(R.string.saved_name)));
-        infoJson.put("surname", getStoredData(getString(R.string.saved_surname)));
-        infoJson.put("email", getStoredData(getString(R.string.saved_email)));
-        infoJson.put("height", Integer.parseInt(getStoredData(getString(R.string.saved_height))));
-        infoJson.put("shoeSize", Integer.parseInt(getStoredData(getString(R.string.saved_shoesize))));
+        infoJson.put("name", Settings.get(this, getString(R.string.saved_name)));
+        infoJson.put("surname", Settings.get(this, getString(R.string.saved_surname)));
+        infoJson.put("email", Settings.get(this, getString(R.string.saved_email)));
+        infoJson.put("height", Integer.parseInt(Settings.get(this, getString(R.string.saved_height), "1")));
+        infoJson.put("shoeSize", Integer.parseInt(Settings.get(this, getString(R.string.saved_shoesize), "1")));
 
         return infoJson;
-    }
-
-    private String getStoredData(String key) {
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        return sharedPref.getString(key, null);
     }
 }

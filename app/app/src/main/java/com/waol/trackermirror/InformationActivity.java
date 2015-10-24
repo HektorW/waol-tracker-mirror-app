@@ -10,6 +10,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.waol.trackermirror.utils.Settings;
+
 public class InformationActivity extends AppCompatActivity {
 
     private EditText nameInput;
@@ -31,35 +33,23 @@ public class InformationActivity extends AppCompatActivity {
         this.shoeSizeInput = (EditText)findViewById(R.id.information_shoesize_input);
         this.saveButton = (Button)findViewById(R.id.information_submit);
 
-        this.nameInput.setText(getData(getString(R.string.saved_name)));
-        this.surnameInput.setText(getData(getString(R.string.saved_surname)));
-        this.emailInput.setText(getData(getString(R.string.saved_email)));
-        this.heightInput.setText(getData(getString(R.string.saved_height)));
-        this.shoeSizeInput.setText(getData(getString(R.string.saved_shoesize)));
+        this.nameInput.setText(Settings.get(this, getString(R.string.saved_name)));
+        this.surnameInput.setText(Settings.get(this, (getString(R.string.saved_surname))));
+        this.emailInput.setText(Settings.get(this, (getString(R.string.saved_email))));
+        this.heightInput.setText(Settings.get(this, (getString(R.string.saved_height))));
+        this.shoeSizeInput.setText(Settings.get(this, (getString(R.string.saved_shoesize))));
 
         this.saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveData(getString(R.string.saved_name), nameInput.getText().toString());
-                saveData(getString(R.string.saved_surname), surnameInput.getText().toString());
-                saveData(getString(R.string.saved_email), emailInput.getText().toString());
-                saveData(getString(R.string.saved_height), heightInput.getText().toString());
-                saveData(getString(R.string.saved_shoesize), shoeSizeInput.getText().toString());
+                Settings.store(InformationActivity.this, getString(R.string.saved_name), nameInput.getText().toString());
+                Settings.store(InformationActivity.this, getString(R.string.saved_surname), surnameInput.getText().toString());
+                Settings.store(InformationActivity.this, getString(R.string.saved_email), emailInput.getText().toString());
+                Settings.store(InformationActivity.this, getString(R.string.saved_height), heightInput.getText().toString());
+                Settings.store(InformationActivity.this, getString(R.string.saved_shoesize), shoeSizeInput.getText().toString());
 
                 startActivity(new Intent(InformationActivity.this, ConnectedActivity.class));
             }
         });
-    }
-
-    private void saveData(String key, String value){
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(key, value);
-        editor.commit();
-    }
-
-    private String getData(String key) {
-        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
-        return sharedPref.getString(key, null);
     }
 }
