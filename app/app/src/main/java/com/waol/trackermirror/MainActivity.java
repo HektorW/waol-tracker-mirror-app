@@ -2,6 +2,8 @@ package com.waol.trackermirror;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -24,28 +26,23 @@ import java.util.UUID;
 public class MainActivity extends AppCompatActivity {
 
     private BeaconManager beaconManager;
+    private TextView searchText;
+
+    private boolean foundBeacon = false;
+    private String dots = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        this.beaconManager = new BeaconManager(getApplicationContext());
-//
-//        this.beaconManager.setRangingListener(new BeaconManager.RangingListener() {
-//            @Override
-//            public void onBeaconsDiscovered(Region region, List<Beacon> list) {
-//                if(!list.isEmpty()){
-//                    Beacon beacon = list.get(0);
-//                    double accuracy = Utils.computeAccuracy(beacon);
-//                    ((TextView) findViewById(R.id.main_header_txt)).setText(beacon.getProximityUUID().toString() + "\n" + accuracy);
-//                }
-//            }
-//        });
+        this.searchText = (TextView)findViewById(R.id.main_search_txt);
 
+        this.beaconManager = new BeaconManager(getApplicationContext());
         this.beaconManager.setMonitoringListener(new BeaconManager.MonitoringListener() {
             @Override
             public void onEnteredRegion(Region region, List<Beacon> list) {
+                foundBeacon = true;
                 startActivity(new Intent(MainActivity.this, ConnectedActivity.class));
             }
 
@@ -53,6 +50,8 @@ public class MainActivity extends AppCompatActivity {
             public void onExitedRegion(Region region) {
             }
         });
+
+        updateSearchText();
     }
 
     @Override
@@ -78,28 +77,19 @@ public class MainActivity extends AppCompatActivity {
         this.beaconManager.disconnect();
     }
 
+    private void updateSearchText(){
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if(dots.length() > 2){
+                    dots = "";
+                }
+                dots += ".";
+                searchText.setText("Searching beacons" + dots);
 
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
+                if (!foundBeacon)
+                    updateSearchText();
+            }
+        }, 1000);
     }
 }

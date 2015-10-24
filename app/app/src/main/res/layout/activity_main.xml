@@ -3,16 +3,28 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="20dp"
     android:fitsSystemWindows="true"
-    tools:context="com.waol.trackermirror.MainActivity">
-
+    tools:context="com.waol.trackermirror.MainActivity"
+    android:background="#85144b">
 
     <ImageView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/imageView"
+        android:id="@+id/main_logo"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="86dp"
-        android:src="@drawable/wireless"/>
+        android:layout_marginTop="50dp"
+        android:src="@drawable/logo"/>
+
+    <TextView
+        android:id="@+id/main_search_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/main_logo"
+        android:layout_marginTop="70dp"
+        android:textSize="25dp"
+        android:text="Searching beacons..."
+        android:textColor="#EB7AB1"/>
 </RelativeLayout>
