@@ -8,12 +8,15 @@ import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 
 
 public class TcpClient extends AsyncTask<String, String, Void> {
 
     private OnMessageReceived messageListener = null;
+    private OnSocketConnect connectionListener = null;
 
     private Socket socket;
     private PrintWriter bufferOut;
@@ -22,12 +25,20 @@ public class TcpClient extends AsyncTask<String, String, Void> {
 
     private boolean isRunning = false;
 
-    public TcpClient(OnMessageReceived messageListener) {
+    public void setMessageListener(OnMessageReceived messageListener){
         this.messageListener = messageListener;
     }
 
+    public void setConnectionListener(OnSocketConnect connectionListener){
+        this.connectionListener = connectionListener;
+    }
+
+    public boolean isConnected() {
+        return socket.isConnected();
+    }
+
     public void sendData(String data) {
-        if(bufferOut != null && isRunning){
+        if(bufferOut != null && isRunning && isConnected()){
             Log.d("TCPClient", "Send data");
             bufferOut.println(data);
             bufferOut.flush();
@@ -52,15 +63,31 @@ public class TcpClient extends AsyncTask<String, String, Void> {
         Log.d("TCPClient", "DoInBackground");
 
         try{
-            this.socket = new Socket(params[0], Integer.parseInt(params[1]));
-            Log.d("TCPClient", "Connect to socket " + params[0]);
+            // Create socket
+            this.socket = new Socket();
+            InetSocketAddress socketAddress = new InetSocketAddress(params[0], Integer.parseInt(params[1]));
+
+            // Keep try connect to server until successful connection
+            while (isRunning && !socket.isConnected()) {
+                try{
+                    this.socket.connect(socketAddress);
+                } catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+
+            // Connected to server!
+            Log.d("TCPClient", "Connect to server: " + params[0]);
+            if(connectionListener != null){
+                this.connectionListener.successfulConnection();
+            }
 
             try{
 
                 this.bufferOut = new PrintWriter(new BufferedWriter(new OutputStreamWriter(socket.getOutputStream())), true);
                 this.bufferIn = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                while (isRunning){
+                while (isRunning && !socket.isClosed()){
                     try{
                         incoming = bufferIn.readLine();
                         if(incoming != null && messageListener != null){
@@ -88,5 +115,9 @@ public class TcpClient extends AsyncTask<String, String, Void> {
 
     public interface OnMessageReceived {
         void messageReceived(String message);
+    }
+
+    public interface OnSocketConnect {
+        void successfulConnection();
     }
 }

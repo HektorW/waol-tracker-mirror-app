@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -46,13 +47,15 @@ public class ConnectedActivity extends AppCompatActivity {
         this.userInformationButton = (Button)findViewById(R.id.connected_userinformation_btn);
 
         // Create connection with tcp server
-        this.tcpClient = new TcpClient(new TcpClient.OnMessageReceived() {
-            @Override
-            public void messageReceived(String message) {
+        this.tcpClient = new TcpClient();
+        this.tcpClient.execute(remoteIpAddress, port + "");
 
+        this.tcpClient.setConnectionListener(new TcpClient.OnSocketConnect() {
+            @Override
+            public void successfulConnection() {
+                Log.d("ConnectionStatus", "Successful connection");
             }
         });
-        this.tcpClient.execute(remoteIpAddress, port + "");
 
         // Beacon range listening
         this.beaconManager = new BeaconManager(getApplicationContext());
@@ -65,15 +68,17 @@ public class ConnectedActivity extends AppCompatActivity {
                     ConnectedActivity.this.beaconDistance.setText(new DecimalFormat("#.##").format(Utils.computeAccuracy(closestBeacon)));
 
                     // Send data to server
-                    JSONObject json = new JSONObject();
-                    try {
-                        json.put("info", createInfoJsonObject());
-                        json.put("distance", Utils.computeAccuracy(closestBeacon) + "");
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
+                    if(tcpClient.isConnected()){
+                        JSONObject json = new JSONObject();
+                        try {
+                            json.put("info", createInfoJsonObject());
+                            json.put("distance", Utils.computeAccuracy(closestBeacon) + "");
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
 
-                    tcpClient.sendData(json.toString());
+                        tcpClient.sendData(json.toString());
+                    }
                 }
             }
         });
@@ -107,6 +112,7 @@ public class ConnectedActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         this.beaconManager.disconnect();
+        this.tcpClient.closeSocket();
     }
 
     private JSONObject createInfoJsonObject() throws JSONException {
