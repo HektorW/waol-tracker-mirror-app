@@ -18,7 +18,7 @@
     <RelativeLayout
         android:id="@+id/connected_wrapper"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_below="@+id/connected_logo">
 
         <TextView
@@ -52,7 +52,31 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="20dp"
             android:textColor="@color/mainTextColor"/>
+
+        <TextView
+            android:id="@+id/connected_connectionStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_below="@+id/connected_beacon_distance_txt"
+            android:textColor="@color/mainTextColor"
+            android:layout_marginTop="20dp"
+            android:gravity="center_horizontal"
+            android:text="Connection status:\nNo Wifi" />
+
     </RelativeLayout>
+
+    <uz.shift.colorpicker.LineColorPicker
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/connected_colorPicker"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:layout_below="@+id/connected_wrapper"
+        android:layout_marginTop="20dp"
+        app:orientation="horizontal"
+        app:colors="@array/colors"
+        app:selectedColorIndex="3" />
 
     <Button
         android:layout_width="100dp"
@@ -62,7 +86,7 @@
         android:id="@+id/connected_userinformation_btn"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="20dp"
         android:textColor="@color/button_text_color"
         android:textSize="18dp"
         android:background="@drawable/circle_button_shape"/>

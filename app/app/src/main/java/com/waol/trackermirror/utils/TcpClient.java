@@ -40,12 +40,15 @@ public class TcpClient extends AsyncTask<String, String, Void> {
         return socket.isConnected();
     }
 
-    public void sendData(String data) {
-        if(bufferOut != null && isRunning && isConnected()){
+    public boolean sendData(String data) {
+        if(bufferOut != null && isRunning && isConnected() && !bufferOut.checkError()){
             Log.d("TCPClient", "Send data");
             bufferOut.println(data);
             bufferOut.flush();
+            return true;
         }
+
+        return false;
     }
 
     public void closeSocket() {

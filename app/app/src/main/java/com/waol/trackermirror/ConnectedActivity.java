@@ -2,8 +2,10 @@ package com.waol.trackermirror;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.AsyncTask;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -29,6 +31,9 @@ import org.json.JSONObject;
 import java.text.DecimalFormat;
 import java.util.List;
 
+import uz.shift.colorpicker.LineColorPicker;
+import uz.shift.colorpicker.OnColorChangedListener;
+
 public class ConnectedActivity extends AppCompatActivity implements ViewTreeObserver.OnGlobalLayoutListener {
 
     private static final String remoteIpAddress = "192.168.0.196";
@@ -39,7 +44,12 @@ public class ConnectedActivity extends AppCompatActivity implements ViewTreeObse
 
     private TextView beaconId;
     private TextView beaconDistance;
+    private TextView connectionStatus;
     private Button userInformationButton;
+    private LineColorPicker colorPicker;
+
+    private boolean hadConnection = false;
+    private int numberOfPackagesSent = 0;
     private boolean hasRunnedAnimations = false;
 
     @Override
@@ -50,15 +60,25 @@ public class ConnectedActivity extends AppCompatActivity implements ViewTreeObse
         this.beaconId = (TextView)findViewById(R.id.connected_beacon_id_txt);
         this.beaconDistance = (TextView)findViewById(R.id.connected_beacon_distance_txt);
         this.userInformationButton = (Button)findViewById(R.id.connected_userinformation_btn);
+        this.connectionStatus = (TextView)findViewById(R.id.connected_connectionStatus);
+        this.colorPicker = (LineColorPicker)findViewById(R.id.connected_colorPicker);
 
-        // Create connection with tcp server
+        // Create TCP client
         this.tcpClient = new TcpClient();
-        this.tcpClient.execute(remoteIpAddress, port + "");
+        this.connect();
 
         this.tcpClient.setConnectionListener(new TcpClient.OnSocketConnect() {
             @Override
             public void successfulConnection() {
                 Log.d("ConnectionStatus", "Successful connection");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        connectionStatus.setText("Connection status:\n" + remoteIpAddress + ":" + port);
+                    }
+                });
+
+                hadConnection = true;
             }
         });
 
@@ -73,16 +93,47 @@ public class ConnectedActivity extends AppCompatActivity implements ViewTreeObse
                     ConnectedActivity.this.beaconDistance.setText("Distance:" + new DecimalFormat("#.##").format(Utils.computeAccuracy(closestBeacon)));
 
                     // Send data to server
-                    if(tcpClient.isConnected()){
+                    if (tcpClient.isConnected()) {
                         JSONObject json = new JSONObject();
                         try {
                             json.put("info", createInfoJsonObject());
                             json.put("distance", Utils.computeAccuracy(closestBeacon) + "");
+
+                            JSONObject colorJson = new JSONObject();
+                            colorJson.put("r", Color.red(colorPicker.getColor()));
+                            colorJson.put("g", Color.green(colorPicker.getColor()));
+                            colorJson.put("b", Color.blue(colorPicker.getColor()));
+
+                            json.put("color", colorJson);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
 
-                        tcpClient.sendData(json.toString());
+                        boolean sent = tcpClient.sendData(json.toString());
+
+                        if(sent){
+                            numberOfPackagesSent++;
+                            connectionStatus.setText("Connection status:\n" + remoteIpAddress + ":" + port + "\n" + numberOfPackagesSent + " Packages sent");
+                        }else {
+                            // Fail to send package
+                            connectionStatus.setText("Connection status:\n" + remoteIpAddress + ":" + port + "\nFail to send package");
+                            tcpClient.closeSocket();
+
+                            // Something went wrong create new connection
+                            tcpClient = new TcpClient();
+                            connect();
+                        }
+
+                    } else if (hadConnection) {
+                        connectionStatus.setText("Connection status:\nLost connection");
+                        hadConnection = false;
+
+                        new Handler().postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                connect();
+                            }
+                        }, 2000);
                     }
                 }
             }
@@ -97,6 +148,9 @@ public class ConnectedActivity extends AppCompatActivity implements ViewTreeObse
 
         findViewById(android.R.id.content).getViewTreeObserver().addOnGlobalLayoutListener(this);
     }
+
+
+
 
     @Override
     protected void onResume() {
@@ -120,6 +174,47 @@ public class ConnectedActivity extends AppCompatActivity implements ViewTreeObse
         super.onStop();
         this.beaconManager.disconnect();
         this.tcpClient.closeSocket();
+    }
+
+
+    private void connect() {
+        // Check if connected to wifi
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        connectionStatus.setText("Connection status:\nLooking for wifi");
+                    }
+                });
+
+                try{
+                    // If no wifi, check again after 1 sec
+                    while (!hasWifi()) {
+                        Thread.sleep(1000);
+                    }
+                } catch (Exception e){
+                    e.printStackTrace();
+                } finally {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            connectionStatus.setText("Connection status:\nHas wifi connection");
+                        }
+                    });
+
+                    // When wifi connection execute TCP client connection
+                    tcpClient.execute(remoteIpAddress, port + "");
+                }
+            }
+        }).start();
+    }
+
+    private boolean hasWifi(){
+        ConnectivityManager connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo wifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+        return wifi.isConnected();
     }
 
     private JSONObject createInfoJsonObject() throws JSONException {
