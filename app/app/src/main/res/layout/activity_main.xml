@@ -6,7 +6,7 @@
     android:padding="20dp"
     android:fitsSystemWindows="true"
     tools:context="com.waol.trackermirror.MainActivity"
-    android:background="#85144b">
+    android:background="@color/mainBackground">
 
     <ImageView
         android:layout_width="wrap_content"
@@ -26,5 +26,18 @@
         android:layout_marginTop="70dp"
         android:textSize="25dp"
         android:text="Searching beacons..."
-        android:textColor="#EB7AB1"/>
+        android:textColor="@color/mainTextColor"/>
+
+    <Button
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:padding="5dp"
+        android:text="Info"
+        android:id="@+id/main_userinformation_btn"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="50dp"
+        android:textColor="@color/button_text_color"
+        android:textSize="18dp"
+        android:background="@drawable/circle_button_shape"/>
 </RelativeLayout>

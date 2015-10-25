@@ -34,6 +34,9 @@ public class TcpClient extends AsyncTask<String, String, Void> {
     }
 
     public boolean isConnected() {
+        if(socket == null)
+            return false;
+
         return socket.isConnected();
     }
 
@@ -89,10 +92,12 @@ public class TcpClient extends AsyncTask<String, String, Void> {
 
                 while (isRunning && !socket.isClosed()){
                     try{
-                        incoming = bufferIn.readLine();
-                        if(incoming != null && messageListener != null){
-                            Log.d("TCPClient", "Message received");
-                            messageListener.messageReceived(incoming);
+                        if(bufferIn != null){
+                            incoming = bufferIn.readLine();
+                            if(incoming != null && messageListener != null){
+                                Log.d("TCPClient", "Message received");
+                                messageListener.messageReceived(incoming);
+                            }
                         }
                     } catch (Exception e){
                         e.printStackTrace();

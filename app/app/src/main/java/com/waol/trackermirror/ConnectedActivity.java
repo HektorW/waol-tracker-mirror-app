@@ -8,6 +8,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -25,7 +29,7 @@ import org.json.JSONObject;
 import java.text.DecimalFormat;
 import java.util.List;
 
-public class ConnectedActivity extends AppCompatActivity {
+public class ConnectedActivity extends AppCompatActivity implements ViewTreeObserver.OnGlobalLayoutListener {
 
     private static final String remoteIpAddress = "192.168.0.196";
     private static final Integer port = 8004;
@@ -36,6 +40,7 @@ public class ConnectedActivity extends AppCompatActivity {
     private TextView beaconId;
     private TextView beaconDistance;
     private Button userInformationButton;
+    private boolean hasRunnedAnimations = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,7 +70,7 @@ public class ConnectedActivity extends AppCompatActivity {
                 if (!list.isEmpty()) {
                     Beacon closestBeacon = list.get(0);
                     ConnectedActivity.this.beaconId.setText(closestBeacon.getProximityUUID().toString());
-                    ConnectedActivity.this.beaconDistance.setText(new DecimalFormat("#.##").format(Utils.computeAccuracy(closestBeacon)));
+                    ConnectedActivity.this.beaconDistance.setText("Distance:" + new DecimalFormat("#.##").format(Utils.computeAccuracy(closestBeacon)));
 
                     // Send data to server
                     if(tcpClient.isConnected()){
@@ -89,6 +94,8 @@ public class ConnectedActivity extends AppCompatActivity {
                 startActivity(new Intent(ConnectedActivity.this, InformationActivity.class));
             }
         });
+
+        findViewById(android.R.id.content).getViewTreeObserver().addOnGlobalLayoutListener(this);
     }
 
     @Override
@@ -124,5 +131,24 @@ public class ConnectedActivity extends AppCompatActivity {
         infoJson.put("shoeSize", Integer.parseInt(Settings.get(this, getString(R.string.saved_shoesize), "1")));
 
         return infoJson;
+    }
+
+    @Override
+    public void onGlobalLayout() {
+        if(!hasRunnedAnimations){
+            hasRunnedAnimations = true;
+            findViewById(R.id.connected_logo).startAnimation(AnimationUtils.loadAnimation(this, R.anim.logo_scale_animation));
+
+            ViewGroup wrapper = (ViewGroup)findViewById(R.id.connected_wrapper);
+            int startOffset = 1500;
+            int offset = 50;
+            for (int i = 0; i < wrapper.getChildCount(); i++){
+                Animation animation = AnimationUtils.loadAnimation(this, R.anim.swipe_in_animation);
+                animation.setStartOffset(startOffset);
+                startOffset += offset;
+
+                wrapper.getChildAt(i).startAnimation(animation);
+            }
+        }
     }
 }

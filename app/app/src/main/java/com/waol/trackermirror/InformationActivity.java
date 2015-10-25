@@ -6,13 +6,17 @@ import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
 import com.waol.trackermirror.utils.Settings;
 
-public class InformationActivity extends AppCompatActivity {
+public class InformationActivity extends AppCompatActivity implements ViewTreeObserver.OnGlobalLayoutListener {
 
     private EditText nameInput;
     private EditText surnameInput;
@@ -20,6 +24,8 @@ public class InformationActivity extends AppCompatActivity {
     private EditText heightInput;
     private EditText shoeSizeInput;
     private Button saveButton;
+
+    private boolean hasRunnedAnimations = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,5 +57,25 @@ public class InformationActivity extends AppCompatActivity {
                 startActivity(new Intent(InformationActivity.this, ConnectedActivity.class));
             }
         });
+
+        findViewById(android.R.id.content).getViewTreeObserver().addOnGlobalLayoutListener(this);
+    }
+
+    @Override
+    public void onGlobalLayout() {
+        if(!hasRunnedAnimations){
+            hasRunnedAnimations = true;
+            ViewGroup root = (ViewGroup)findViewById(R.id.information_wrapper);
+
+            int startOffset = 0;
+            int offset = 50;
+            for (int i = 0; i < root.getChildCount(); i++) {
+                Animation animation = AnimationUtils.loadAnimation(this, R.anim.swipe_in_animation);
+                animation.setStartOffset(startOffset);
+                startOffset += offset;
+
+                root.getChildAt(i).startAnimation(animation);
+            }
+        }
     }
 }

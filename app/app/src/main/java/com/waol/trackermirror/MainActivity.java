@@ -11,6 +11,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 import android.widget.TextView;
 
 import com.estimote.sdk.Beacon;
@@ -37,6 +38,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         this.searchText = (TextView)findViewById(R.id.main_search_txt);
+        findViewById(R.id.main_userinformation_btn).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, InformationActivity.class));
+            }
+        });
 
         this.beaconManager = new BeaconManager(getApplicationContext());
         this.beaconManager.setMonitoringListener(new BeaconManager.MonitoringListener() {
