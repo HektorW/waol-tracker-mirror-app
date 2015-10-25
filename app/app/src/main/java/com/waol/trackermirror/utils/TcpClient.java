@@ -19,10 +19,12 @@ public class TcpClient extends AsyncTask<String, String, Void> {
     private OnSocketConnect connectionListener = null;
 
     private Socket socket;
+    private SocketAddress socketAddress;
     private PrintWriter bufferOut;
     private BufferedReader bufferIn;
     private String incoming;
 
+    private boolean startedConnect = false;
     private boolean isRunning = false;
 
     public void setMessageListener(OnMessageReceived messageListener){
@@ -63,30 +65,48 @@ public class TcpClient extends AsyncTask<String, String, Void> {
         bufferOut = null;
     }
 
+    public void connect(String ip, int port){
+        if(startedConnect){
+            return;
+        }
+
+        startedConnect = true;
+        this.socket = new Socket();
+        this.socketAddress = new InetSocketAddress(ip, port);
+
+        // Keep try connect to server until successful connection
+//        while (isRunning && !socket.isConnected()) {
+//            try{
+//                this.socket.connect(socketAddress, 2000);
+//            } catch (Exception e){
+//                e.printStackTrace();
+//            }
+//        }
+
+        try{
+            this.socket.connect(socketAddress, 60000);
+        } catch (Exception e){
+            e.printStackTrace();
+            startedConnect = false;
+            return;
+        }
+
+        // Connected to server!
+        Log.d("TCPClient", "Connect to server: " + socketAddress.toString());
+        if(connectionListener != null){
+            this.connectionListener.successfulConnection();
+        }
+
+        startedConnect = false;
+    }
+
     @Override
     protected Void doInBackground(String... params) {
         this.isRunning = true;
         Log.d("TCPClient", "DoInBackground");
 
         try{
-            // Create socket
-            this.socket = new Socket();
-            InetSocketAddress socketAddress = new InetSocketAddress(params[0], Integer.parseInt(params[1]));
-
-            // Keep try connect to server until successful connection
-            while (isRunning && !socket.isConnected()) {
-                try{
-                    this.socket.connect(socketAddress);
-                } catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
-
-            // Connected to server!
-            Log.d("TCPClient", "Connect to server: " + params[0]);
-            if(connectionListener != null){
-                this.connectionListener.successfulConnection();
-            }
+            connect(params[0], Integer.parseInt(params[1]));
 
             try{
 

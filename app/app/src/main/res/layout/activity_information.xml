@@ -30,7 +30,7 @@
             android:id="@+id/information_lastname_input"
             android:layout_centerHorizontal="true"
             android:layout_below="@+id/information_name_input"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="20dp"
             android:textColor="@color/mainTextColor"
             android:textColorHint="@color/editTextHintColor"/>
 
@@ -42,7 +42,7 @@
             android:id="@+id/information_email_input"
             android:layout_centerHorizontal="true"
             android:layout_below="@+id/information_lastname_input"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="20dp"
             android:textColor="@color/mainTextColor"
             android:textColorHint="@color/editTextHintColor"/>
 
@@ -54,7 +54,7 @@
             android:id="@+id/information_height_input"
             android:layout_centerHorizontal="true"
             android:layout_below="@+id/information_email_input"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="20dp"
             android:textColor="@color/mainTextColor"
             android:textColorHint="@color/editTextHintColor"/>
 
@@ -66,7 +66,31 @@
             android:id="@+id/information_shoesize_input"
             android:layout_centerHorizontal="true"
             android:layout_below="@+id/information_height_input"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/mainTextColor"
+            android:textColorHint="@color/editTextHintColor"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:hint="Ip address"
+            android:id="@+id/information_ip_input"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/information_shoesize_input"
+            android:layout_marginTop="20dp"
+            android:textColor="@color/mainTextColor"
+            android:textColorHint="@color/editTextHintColor"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="Port"
+            android:id="@+id/information_port_input"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@+id/information_ip_input"
+            android:layout_marginTop="20dp"
             android:textColor="@color/mainTextColor"
             android:textColorHint="@color/editTextHintColor"/>
 
@@ -76,7 +100,7 @@
             android:layout_height="100dp"
             android:text="Save"
             android:layout_centerHorizontal="true"
-            android:layout_below="@+id/information_shoesize_input"
+            android:layout_below="@+id/information_ip_input"
             android:layout_marginTop="30dp"
             android:textColor="@color/button_text_color"
             android:background="@drawable/circle_button_shape" />

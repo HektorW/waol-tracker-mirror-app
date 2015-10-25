@@ -7,4 +7,6 @@
     <string name="saved_surname">TrackerMirror_Data_Surname</string>
     <string name="saved_height">TrackerMirror_Data_Height</string>
     <string name="saved_shoesize">TrackerMirror_Data_ShoeSize</string>
+    <string name="saved_ip">TrackerMirror_Data_IpAddress</string>
+    <string name="saved_port">TrackerMirror_Data_Port</string>
 </resources>

@@ -36,8 +36,11 @@ import uz.shift.colorpicker.OnColorChangedListener;
 
 public class ConnectedActivity extends AppCompatActivity implements ViewTreeObserver.OnGlobalLayoutListener {
 
-    private static final String remoteIpAddress = "192.168.0.196";
-    private static final Integer port = 8004;
+    private static final String defaultRemoteIpAddress = "192.168.0.196";
+    private static final Integer defaultPort = 8004;
+
+    private String remoteIpAddress;
+    private Integer port;
 
     private BeaconManager beaconManager;
     private TcpClient tcpClient;
@@ -62,6 +65,12 @@ public class ConnectedActivity extends AppCompatActivity implements ViewTreeObse
         this.userInformationButton = (Button)findViewById(R.id.connected_userinformation_btn);
         this.connectionStatus = (TextView)findViewById(R.id.connected_connectionStatus);
         this.colorPicker = (LineColorPicker)findViewById(R.id.connected_colorPicker);
+
+        String ip = Settings.get(this, getString(R.string.saved_ip));
+        String savedPort = Settings.get(this, getString(R.string.saved_port));
+
+        this.remoteIpAddress = (ip != null && !ip.isEmpty()) ? ip : defaultRemoteIpAddress;
+        this.port = (savedPort != null && !savedPort.isEmpty()) ? Integer.parseInt(savedPort) : defaultPort;
 
         // Create TCP client
         this.tcpClient = new TcpClient();
@@ -93,7 +102,7 @@ public class ConnectedActivity extends AppCompatActivity implements ViewTreeObse
                     ConnectedActivity.this.beaconDistance.setText("Distance:" + new DecimalFormat("#.##").format(Utils.computeAccuracy(closestBeacon)));
 
                     // Send data to server
-                    if (tcpClient.isConnected()) {
+                    if (tcpClient != null && tcpClient.isConnected()) {
                         JSONObject json = new JSONObject();
                         try {
                             json.put("info", createInfoJsonObject());
@@ -117,11 +126,7 @@ public class ConnectedActivity extends AppCompatActivity implements ViewTreeObse
                         }else {
                             // Fail to send package
                             connectionStatus.setText("Connection status:\n" + remoteIpAddress + ":" + port + "\nFail to send package");
-                            tcpClient.closeSocket();
-
-                            // Something went wrong create new connection
-                            tcpClient = new TcpClient();
-                            connect();
+                            tcpClient.execute(remoteIpAddress, port.toString());
                         }
 
                     } else if (hadConnection) {
@@ -131,7 +136,7 @@ public class ConnectedActivity extends AppCompatActivity implements ViewTreeObse
                         new Handler().postDelayed(new Runnable() {
                             @Override
                             public void run() {
-                                connect();
+                                tcpClient.execute(remoteIpAddress, port.toString());
                             }
                         }, 2000);
                     }
@@ -173,7 +178,9 @@ public class ConnectedActivity extends AppCompatActivity implements ViewTreeObse
     protected void onStop() {
         super.onStop();
         this.beaconManager.disconnect();
-        this.tcpClient.closeSocket();
+        if(tcpClient != null){
+            this.tcpClient.closeSocket();
+        }
     }
 
 

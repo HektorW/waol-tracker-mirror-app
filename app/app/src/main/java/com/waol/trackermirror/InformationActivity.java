@@ -23,6 +23,8 @@ public class InformationActivity extends AppCompatActivity implements ViewTreeOb
     private EditText emailInput;
     private EditText heightInput;
     private EditText shoeSizeInput;
+    private EditText ipInput;
+    private EditText portInput;
     private Button saveButton;
 
     private boolean hasRunnedAnimations = false;
@@ -37,6 +39,8 @@ public class InformationActivity extends AppCompatActivity implements ViewTreeOb
         this.emailInput = (EditText)findViewById(R.id.information_email_input);
         this.heightInput = (EditText)findViewById(R.id.information_height_input);
         this.shoeSizeInput = (EditText)findViewById(R.id.information_shoesize_input);
+        this.ipInput = (EditText)findViewById(R.id.information_ip_input);
+        this.portInput = (EditText)findViewById(R.id.information_port_input);
         this.saveButton = (Button)findViewById(R.id.information_submit);
 
         this.nameInput.setText(Settings.get(this, getString(R.string.saved_name)));
@@ -44,6 +48,8 @@ public class InformationActivity extends AppCompatActivity implements ViewTreeOb
         this.emailInput.setText(Settings.get(this, (getString(R.string.saved_email))));
         this.heightInput.setText(Settings.get(this, (getString(R.string.saved_height))));
         this.shoeSizeInput.setText(Settings.get(this, (getString(R.string.saved_shoesize))));
+        this.ipInput.setText(Settings.get(this, getString(R.string.saved_ip)));
+        this.portInput.setText(Settings.get(this, getString(R.string.saved_port)));
 
         this.saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -53,6 +59,8 @@ public class InformationActivity extends AppCompatActivity implements ViewTreeOb
                 Settings.store(InformationActivity.this, getString(R.string.saved_email), emailInput.getText().toString());
                 Settings.store(InformationActivity.this, getString(R.string.saved_height), heightInput.getText().toString());
                 Settings.store(InformationActivity.this, getString(R.string.saved_shoesize), shoeSizeInput.getText().toString());
+                Settings.store(InformationActivity.this, getString(R.string.saved_ip), ipInput.getText().toString());
+                Settings.store(InformationActivity.this, getString(R.string.saved_port), portInput.getText().toString());
 
                 startActivity(new Intent(InformationActivity.this, ConnectedActivity.class));
             }
